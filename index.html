@@ -3,28 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portafolio | Gabriel García</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
-    <title>Portafolio | Gabriel Garcia</title>
 </head>
 <body>
 
     <div class="container">
         
         <header>
-            <img src="tu_foto.jpg" alt="Foto Perfil" class="profile-pic">
+            <img src="tu_foto_perfil.jpg" alt="Gabriel García" class="profile-pic">
             
-            <h1>Luis Gabriel Garcia Carmona</h1>
-            <div class="subtitle">Desarrollador de Software & Estudiante</div>
+            <h1>Luis Gabriel García Carmona</h1>
+            <div class="subtitle">Android Developer | QA Lead | Ing. Software en Formación</div>
             
             <p class="bio">
-                Estudiante universitario en Veracruz, México. Apasionado por la automatización, 
-                el desarrollo móvil con Kotlin y crear soluciones que resuelvan problemas reales.
+                Combino <b>+10 años de experiencia</b> en banca y liderazgo de equipos con pasión por el desarrollo móvil. 
+                Actualmente lidero equipos de QA remotos mientras especializo mi carrera técnica en 
+                <b>Kotlin, Android y Soluciones IoT</b>.
             </p>
 
-            <div class="social-links">
-                <a href="https://github.com/TU_USUARIO" class="btn-social">GitHub</a>
-                <a href="https://linkedin.com/in/TU_USUARIO" class="btn-social">LinkedIn</a>
-                <a href="mailto:tu@correo.com" class="btn-social">Email</a>
+            <div style="margin-top: 20px;">
+                <a href="https://github.com/Dramscer" class="btn-main" style="background: #333; color: white; margin-left: 10px;">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
             </div>
         </header>
 
@@ -32,38 +34,49 @@
             <h2>Proyectos Destacados</h2>
 
             <div class="project-card">
-                <div class="project-icon">P</div> 
-                
-                <div class="project-info">
-                    <h3 class="project-title">Presento</h3>
-                    <p style="color: #bbb; margin-bottom: 10px;">
-                        Control remoto para presentaciones (PowerPoint/Canva) mediante App Android y Servidor Python.
-                        Incluye conexión por QR, modo oscuro y control por gestos.
+                <img src="logo.png" class="project-icon" style="object-fit: contain; padding: 0;">
+                <div style="flex: 1;">
+                    <h3 style="margin: 0 0 5px 0; color: #fff;">Presento (Control Remoto)</h3>
+                    <p style="color: #bbb; font-size: 0.9rem;">
+                        Sistema Cliente-Servidor para controlar diapositivas. App Android nativa + Servidor Python (Tkinter). 
+                        Conexión vía Sockets y QR sin internet.
                     </p>
                     <div class="tags">
-                        <span>Kotlin</span>
-                        <span>Python</span>
-                        <span>Sockets</span>
-                        <span>IoT</span>
+                        <span>Kotlin</span><span>Python</span><span>Sockets</span><span>Git</span>
                     </div>
                 </div>
-
-                <div style="margin-left: 20px;">
-                    <a href="https://dramscer.github.io/DIY-ControlPresentaciones/" class="btn-view">Ver Proyecto ➜</a>
-                </div>
+                <a href="https://dramscer.github.io/DIY-ControlPresentaciones/" class="btn-main" style="font-size: 0.8rem; padding: 5px 15px;">Ver Demo</a>
             </div>
 
-            <div class="project-card" style="opacity: 0.7;">
-                <div class="project-icon" style="background: #444; color: #fff;">📦</div>
-                <div class="project-info">
-                    <h3 class="project-title">App de Inventario</h3>
-                    <p style="color: #bbb; margin-bottom: 10px;">
-                        Sistema de gestión de inventarios para el hogar con base de datos en la nube.
+            <div class="project-card">
+                <div class="project-icon"><i class="fas fa-box-open"></i></div>
+                <div style="flex: 1;">
+                    <h3 style="margin: 0 0 5px 0; color: #fff;">Sistema de Gestión de Inventario</h3>
+                    <p style="color: #bbb; font-size: 0.9rem;">
+                        App móvil con arquitectura MVVM. Sincronización Offline-Online mediante Room Database y Firebase.
+                        Gamificación integrada para UX.
+                    </p>
+                    <p style="color: #666; font-size: 0.8rem; font-style: italic; margin-top: 8px;">
+                        <i class="fas fa-info-circle"></i> (Aplicación en desarrollo).
                     </p>
                     <div class="tags">
-                        <span>En Desarrollo</span>
-                        <span>Firebase</span>
-                        <span>Android</span>
+                        <span>Android SDK</span><span>Firebase</span><span>Room DB</span><span>MVVM</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="project-card">
+                <div class="project-icon"><i class="fas fa-microchip"></i></div>
+                <div style="flex: 1;">
+                    <h3 style="margin: 0 0 5px 0; color: #fff;">Prototipo IoT - Comedero Automático</h3>
+                    <p style="color: #bbb; font-size: 0.9rem;">
+                        Integración de Hardware y Software. Creé una app en Android capaz de enviar instrucciones seriales por Bluetooth a un Arduino, el cual accionaba los servomotores del mecanismo dispensador.
+                    </p>
+                    <p style="color: #666; font-size: 0.8rem; font-style: italic; margin-top: 8px;">
+                        <i class="fas fa-info-circle"></i> Código disponible bajo solicitud (Prototipo académico).
+                    </p>
+                    <div class="tags">
+                        <span>Kotlin</span><span>Arduino C++</span><span>Bluetooth</span><span>Servomotores</span>
                     </div>
                 </div>
             </div>
@@ -71,17 +84,34 @@
         </section>
 
         <section>
-            <h2>Stack Tecnológico</h2>
-            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                <span class="btn-social">Android (Kotlin)</span>
-                <span class="btn-social">Python (Scripting)</span>
-                <span class="btn-social">Git / GitHub</span>
-                <span class="btn-social">Linux Basics</span>
+            <h2>Más allá del código</h2>
+            <div class="hobbies-grid">
+                <div class="hobby-card">
+                    <div class="hobby-icon">🎲</div>
+                    <h3 style="color: white; margin: 10px 0;">Dungeon Master</h3>
+                    <p style="color: #999; font-size: 0.9rem;">
+                        Director de juego en D&D. Desarrollo narrativa, improvisación y gestión de equipos en tiempo real.
+                    </p>
+                </div>
+                <div class="hobby-card">
+                    <div class="hobby-icon">🌍</div>
+                    <h3 style="color: white; margin: 10px 0;">Liderazgo Remoto</h3>
+                    <p style="color: #999; font-size: 0.9rem;">
+                        Team Leader & QA en entornos internacionales. Experto en comunicación asíncrona.
+                    </p>
+                </div>
+                <div class="hobby-card">
+                    <div class="hobby-icon">📚</div>
+                    <h3 style="color: white; margin: 10px 0;">Aprendizaje Continuo</h3>
+                    <p style="color: #999; font-size: 0.9rem;">
+                        Promedio 97.4 en Ingeniería. Siempre buscando la siguiente tecnología para dominar.
+                    </p>
+                </div>
             </div>
         </section>
 
-        <footer style="text-align: center; color: #555; margin-top: 50px; font-size: 0.8rem;">
-            &copy; 2026 Gabriel Garcia. Creado con HTML & CSS.
+        <footer style="text-align: center; color: #555; margin-top: 50px; border-top: 1px solid #333; padding-top: 20px;">
+            <p>&copy; 2026 Luis Gabriel García. Orizaba, Veracruz.</p>
         </footer>
 
     </div>
