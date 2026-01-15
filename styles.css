@@ -22,3 +22,27 @@
         .hobbies-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
         .hobby-card { background: #151518; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #333; }
         .hobby-icon { font-size: 2rem; color: #777; margin-bottom: 10px; }
+
+       
+
+@media screen and (max-width: 768px) {
+
+   
+    .project-card {
+        display: flex;
+        flex-direction: column; 
+        align-items: flex-start; 
+        padding-bottom: 20px;    
+        height: auto;            
+    }
+
+    .btn-main {
+        position: center;  
+        margin-top: 15px;  
+        width: 50%;       
+        text-align: center; 
+        transform: none;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
