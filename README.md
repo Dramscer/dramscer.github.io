@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Astro Starter Kit: Minimal
 
 ```sh
@@ -41,3 +42,10 @@ All commands are run from the root of the project, from a terminal:
 ## 👀 Want to learn more?
 
 Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+=======
+# Portafolio Profesional de Gabriel Garcia
+Bienvenido al código fuente de mi portafolio.
+Aquí encontrarás mis proyectos de Android (Kotlin), Python y Automatización.
+
+Puedes ver la web en vivo aquí: https://dramscer.github.io/
+>>>>>>> c8ea55a5cd5c88d12f13689e309adeecb3c8bfe3
