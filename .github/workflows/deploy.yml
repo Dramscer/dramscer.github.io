@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ] # Cambia a master si tu rama principal se llama así
+    branches: [ main ] # Si tu rama es master, cámbiala aquí
   workflow_dispatch:
 
 permissions:
@@ -14,9 +14,6 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
-env:
-  BUILD_PATH: "."
-
 jobs:
   build:
     name: Build
@@ -24,15 +21,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Node
-        uses: actions/configure-pages@v5
+        uses: actions/setup-node@v4
         with:
-          node_version: "20"
-          registry-url: "https://registry.npmjs.org"
+          node-version: "20"
+
       - name: Install dependencies
         run: npm install
+
       - name: Build Astro
         run: npm run build
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist # Le dice a GitHub que suba la carpeta compilada de Astro
 
   deploy:
     environment:
