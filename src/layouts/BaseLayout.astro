@@ -43,6 +43,72 @@ const { title = "Luis Gabriel | Portafolio" } = Astro.props;
     /* Forzamos que se aplique de forma global sin importar la ruta */
     :root {
         color-scheme: dark;
+        /* --- DISEÑO PREMIUM DE TARJETAS (ESTILOS COMPARTIDOS) --- */
+    .skills-grid, .projects-grid, .extras-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .skill-card, .project-card, .extra-card {
+        background: rgba(30, 30, 30, 0.6);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* Efecto Hover para que resalten al pasar el mouse */
+    .skill-card:hover, .project-card:hover, .extra-card:hover {
+        transform: translateY(-5px);
+        border-color: #00ff66; /* Verde neón por defecto */
+        box-shadow: 0 10px 20px rgba(0, 255, 102, 0.1);
+    }
+
+    /* Tipografías dentro de las tarjetas */
+    .skill-card h4, .project-card h4, .extra-card h5 {
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .skill-card p, .project-card p, .extra-card p {
+        color: #b3b3b3;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Botón de enlace a GitHub estilizado */
+    .project-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1.25rem;
+        color: #00ff66;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+
+    .project-link:hover {
+        color: #ffffff;
+        text-decoration: underline;
+    }
+
+    /* Variaciones de colores individuales si quieres que mantengan sus tonos originales */
+    .skill-card:nth-child(2):hover { 
+        border-color: #00ccff; 
+        box-shadow: 0 10px 20px rgba(0, 204, 255, 0.1); 
+    }
+    .skill-card:nth-child(3):hover { 
+        border-color: #cc66ff; 
+        box-shadow: 0 10px 20px rgba(204, 102, 255, 0.1); 
+    }
     }
 
     html, body {
