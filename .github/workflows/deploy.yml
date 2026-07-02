@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ] # Si tu rama es master, cámbiala aquí
+    branches: [ main ] # Si tu rama principal se llama master, cámbiala aquí
   workflow_dispatch:
 
 permissions:
@@ -34,9 +34,9 @@ jobs:
         run: npm run build
 
       - name: Upload Artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
-          path: ./dist # Le dice a GitHub que suba la carpeta compilada de Astro
+          path: ./dist # Apunta a la carpeta compilada de Astro
 
   deploy:
     environment:
