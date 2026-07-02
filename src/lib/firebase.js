@@ -4,7 +4,8 @@ import { getFirestore } from "firebase/firestore";
 
 
 const firebaseConfig = {
-  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
+  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || "", 
+  authDomain: "tu-proyecto.firebaseapp.com",
   authDomain: "portafolio-10805.firebaseapp.com",
   projectId: "portafolio-10805",
   storageBucket: "portafolio-10805.firebasestorage.app",
