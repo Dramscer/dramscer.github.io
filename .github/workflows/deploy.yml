@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ] # Si tu rama principal se llama master, cámbiala aquí
+    branches: [ main ] # Si tu rama principal de Git se llama master, cámbiala aquí
   workflow_dispatch:
 
 permissions:
@@ -25,7 +25,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22" # 🚀 Actualizado a Node 22 para cumplir con el requisito de Astro
 
       - name: Install dependencies
         run: npm install
@@ -36,7 +36,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./dist # Apunta a la carpeta compilada de Astro
+          path: ./dist
 
   deploy:
     environment:
