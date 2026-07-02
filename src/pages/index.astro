@@ -1,17 +1,170 @@
 ---
+// src/pages/index.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
 
+import { db } from '../lib/firebase';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+
+let projects = [];
+let extras = [];
+let contactLinks = [];
+let errorMessage = "";
+
+try {
+    // 1. Traer Proyectos
+    const projectsQuery = query(collection(db, "projects"), orderBy("createdAt", "desc"));
+    const projectsSnapshot = await getDocs(projectsQuery);
+    projects = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    // 2. Traer Características Extra ("Más allá del código")
+    const extrasQuery = query(collection(db, "extras"), orderBy("createdAt", "asc"));
+    const extrasSnapshot = await getDocs(extrasQuery);
+    extras = extrasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    // 3. Traer Enlaces de Redes/Contacto
+    const linksQuery = query(collection(db, "links"), orderBy("createdAt", "asc"));
+    const linksSnapshot = await getDocs(linksQuery);
+    contactLinks = linksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+} catch (error) {
+    console.error("Error al conectar con Firestore:", error);
+    errorMessage = "Hubo un problema al cargar los datos dinámicos.";
+}
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title="Gabriel García | Android Developer">
+    <main class="portfolio-container">
+        
+        <section class="profile-section">
+            <div class="profile-header">
+                <img src="/CV/profile.png" alt="Luis Gabriel García Carmona" class="profile-img" />
+                <div class="profile-text">
+                    <h1 class="profile-name">Luis Gabriel Garcia Carmona</h1>
+                    <p class="profile-title">Android Developer ~ Software Engineering Candidate</p>
+                    <p class="profile-summary">
+                        Candidato a Ingeniería en Sistemas Computacionales entrando a la fase de proyecto de titulación con promedio de excelencia (97.4). Combino experiencia profesional en banca con un rol actual de liderazgo técnico y QA remoto.
+                    </p>
+                    
+                    <div class="profile-links animate-on-scroll">
+                        {contactLinks.map((link) => {
+                            const nameLower = link.name.toLowerCase();
+                            let iconClass = "fa-solid fa-link"; // Icono por defecto
+
+                            if (nameLower.includes("github")) iconClass = "fa-brands fa-github";
+                            if (nameLower.includes("correo") || nameLower.includes("email")) iconClass = "fa-solid fa-envelope";
+                            if (nameLower.includes("cv") || nameLower.includes("curriculum")) iconClass = "fa-solid fa-file-pdf";
+
+                            return (
+                                <a href={link.url} target="_blank" rel="noopener noreferrer" class="contact-btn">
+                                    <i class={iconClass}></i>
+                                    <span>{link.name}</span>
+                                </a>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+
+            <div class="skills-grid">
+                <div class="skill-card animate-on-scroll">
+                    <h4>Lenguajes</h4>
+                    <p>Kotlin, Java, Python, SQL, HTML5/CSS3, JavaScript</p>
+                </div>
+                <div class="skill-card animate-on-scroll">
+                    <h4>Mobile & Cloud</h4>
+                    <p>Android SDK, Firebase (Auth, Firestore, Realtime DB), Room Database</p>
+                </div>
+                <div class="skill-card animate-on-scroll">
+                    <h4>Herramientas & DevOps</h4>
+                    <p>Git/GitHub, N8n, VS Code</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="projects-section">
+            <h2 class="section-title">Proyectos Destacados</h2>
+            {errorMessage && <p class="error-msg">{errorMessage}</p>}
+            
+            <div class="projects-grid">
+                {projects.length > 0 ? (
+                    projects.map((project) => (
+                        <ProjectCard 
+                            title={project.title}
+                            description={project.description}
+                            techStack={project.techStack}
+                            link={project.link}
+                        />
+                    ))
+                ) : (
+                    <p class="loading-msg">No hay proyectos disponibles en este momento.</p>
+                )}
+            </div>
+        </section>
+
+        <section class="extras-section">
+            <h2 class="section-title">Más allá del código</h2>
+            <div class="extras-grid">
+                {extras.length > 0 ? (
+                    extras.map((extra) => (
+                        <div class="extra-card animate-on-scroll">
+                            <div class="extra-icon-wrapper">
+                                <span class="extra-icon">{extra.icon}</span>
+                            </div>
+                            <div class="extra-content">
+                                <h4>{extra.title}</h4>
+                                <p>{extra.description}</p>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <p class="loading-msg">Agrega habilidades blandas desde el panel administrador.</p>
+                )}
+            </div>
+        </section>
+
+    </main>
+</BaseLayout>
+
+<style>
+    .portfolio-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+    .profile-section { margin-bottom: 60px; }
+    .profile-header { display: flex; align-items: center; gap: 30px; margin-bottom: 40px; }
+    .profile-img { width: 130px; height: 130px; border-radius: 50%; border: 3px solid #00ff88; object-fit: cover; background-color: #2a2a2a; }
+    .profile-name { font-size: 2.2rem; margin: 0 0 5px 0; font-weight: 800; }
+    .profile-title { color: #00ff88; font-size: 1.1rem; margin: 0 0 15px 0; }
+    .profile-summary { color: #aaaaaa; line-height: 1.6; margin: 0; }
+
+    /* Barra de Enlaces de Redes */
+    .profile-links { display: flex; justify-content: center; gap: 15px; margin-top: 25px; flex-wrap: wrap; }
+    .contact-btn { background-color: #24292e; border: 1px solid #3f4448; color: #ffffff; padding: 10px 24px; border-radius: 30px; font-size: 0.95rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .contact-btn:hover { background-color: #1a1e22; border-color: #00ff88; color: #00ff88; transform: translateY(-2px); }
+    .contact-btn i { font-size: 1.1rem; }
+
+    /* Grids de Habilidades */
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+    .skill-card { background: #1e1e1e; border: 1px solid #2a2a2a; padding: 20px; border-radius: 12px; }
+    .skill-card h4 { margin: 0 0 10px 0; color: #00ff88; font-size: 1rem; }
+    .skill-card p { margin: 0; color: #cccccc; font-size: 0.9rem; line-height: 1.4; }
+
+    /* Secciones */
+    .section-title { font-size: 1.8rem; font-weight: bold; border-left: 4px solid #00ff88; padding-left: 15px; margin-bottom: 30px; margin-top: 50px; }
+    .projects-grid { display: flex; flex-direction: column; gap: 15px; }
+
+    /* Más allá del código */
+    .extras-grid { display: flex; flex-direction: column; gap: 15px; }
+    .extra-card { background: #1e1e1e; border: 1px solid #2a2a2a; padding: 20px; border-radius: 14px; display: flex; align-items: flex-start; gap: 20px; }
+    .extra-icon-wrapper { background: #2a2a2a; border: 1px solid #333; width: 50px; height: 50px; border-radius: 10px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+    .extra-icon { font-size: 1.6rem; }
+    .extra-content h4 { margin: 0 0 6px 0; color: #ffffff; font-size: 1.1rem; font-weight: 600; }
+    .extra-content p { margin: 0; color: #aaaaaa; font-size: 0.95rem; line-height: 1.5; }
+
+    .error-msg { color: #ff4444; background: rgba(255, 68, 68, 0.1); padding: 10px; border-radius: 6px; }
+    .loading-msg { color: #666666; font-style: italic; }
+
+    @media (max-width: 600px) {
+        .profile-header { flex-direction: column; text-align: center; }
+        .profile-img { width: 110px; height: 110px; }
+        .extra-card { flex-direction: column; gap: 12px; }
+    }
+</style>

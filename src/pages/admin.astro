@@ -1,0 +1,247 @@
+---
+// src/pages/admin.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Panel de Control | Portafolio Pro">
+    <main class="admin-container">
+        
+        <!-- SECCIÓN 1: LOGIN -->
+        <div id="login-section" class="admin-card">
+            <h2>Admin Login</h2>
+            <p class="subtitle">Ingresa tus credenciales para gestionar el portafolio.</p>
+            <div class="form-group">
+                <input type="email" id="email" placeholder="Correo Electrónico" autocomplete="off" required />
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Contraseña" autocomplete="new-password" required />
+            </div>
+            <button id="btn-login" class="primary-btn">Ingresar al Panel</button>
+        </div>
+
+        <!-- PANEL DE CONTROL PRINCIPAL -->
+        <div id="dashboard-section" class="dashboard-wrapper hidden">
+            
+            <nav class="admin-nav">
+                <div class="nav-tabs">
+                    <button id="tab-projects" class="tab-btn active">📁 Proyectos</button>
+                    <button id="tab-extras" class="tab-btn">🎲 Más allá</button>
+                    <button id="tab-links" class="tab-btn">🌐 Enlaces/Redes</button>
+                </div>
+                <button id="btn-logout" class="logout-link">Cerrar Sesión</button>
+            </nav>
+
+            <div class="dashboard-grid">
+                <!-- COLUMNA IZQUIERDA: FORMULARIOS -->
+                <div class="form-column">
+                    
+                    <!-- Formulario de Proyectos -->
+                    <div id="project-form-block" class="admin-card">
+                        <h3>Nuevo Proyecto</h3>
+                        <p class="subtitle">Agrega un proyecto técnico destacado.</p>
+                        <div class="form-group"><input type="text" id="proj-title" placeholder="Título" /></div>
+                        <div class="form-group"><input type="text" id="proj-tech" placeholder="Tecnologías (por comas)" /></div>
+                        <div class="form-group"><textarea id="proj-desc" rows="3" placeholder="Descripción..."></textarea></div>
+                        <div class="form-group"><input type="text" id="proj-link" placeholder="URL o GitHub (Opcional)" /></div>
+                        <button id="btn-save-project" class="primary-btn">Guardar Proyecto</button>
+                    </div>
+
+                    <!-- Formulario de Extras -->
+                    <div id="extra-form-block" class="admin-card hidden">
+                        <h3>Nueva Habilidad Secundaria</h3>
+                        <p class="subtitle">Gestiona la sección 'Más allá del código'.</p>
+                        <div class="form-group"><input type="text" id="extra-icon" placeholder="Emoji (Ej: 🎲, 🎯, 🎨)" /></div>
+                        <div class="form-group"><input type="text" id="extra-title" placeholder="Título" /></div>
+                        <div class="form-group"><textarea id="extra-desc" rows="4" placeholder="Descripción..."></textarea></div>
+                        <button id="btn-save-extra" class="primary-btn">Guardar Característica</button>
+                    </div>
+
+                    <!-- Formulario de Enlaces de Redes/Contacto -->
+                    <div id="link-form-block" class="admin-card hidden">
+                        <h3>Nuevo Enlace de Contacto</h3>
+                        <p class="subtitle">Gestiona tus redes y botones superiores.</p>
+                        <div class="form-group"><input type="text" id="link-name" placeholder="Nombre (Ej: GitHub, Correo, CV)" /></div>
+                        <div class="form-group"><input type="text" id="link-url" placeholder="URL completa (https://...)" /></div>
+                        <button id="btn-save-link" class="primary-btn">Guardar Enlace</button>
+                    </div>
+
+                </div>
+
+                <!-- COLUMNA DERECHA: LISTADO -->
+                <div class="list-column">
+                    <div class="admin-card">
+                        <h3>Elementos Activos</h3>
+                        <p class="subtitle">Visualiza o elimina lo que está publicado en la web.</p>
+                        <div id="live-items-list" class="items-list">
+                            <p class="loading-text">Cargando elementos...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</BaseLayout>
+
+<script>
+    import { auth, db } from '../lib/firebase';
+    import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
+    import { collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot } from "firebase/firestore";
+
+    const loginSection = document.getElementById('login-section');
+    const dashboardSection = document.getElementById('dashboard-section');
+    const liveItemsList = document.getElementById('live-items-list');
+    
+    const projectFormBlock = document.getElementById('project-form-block');
+    const extraFormBlock = document.getElementById('extra-form-block');
+    const linkFormBlock = document.getElementById('link-form-block');
+    
+    const btnLogin = document.getElementById('btn-login');
+    const btnLogout = document.getElementById('btn-logout');
+    const btnSaveProject = document.getElementById('btn-save-project');
+    const btnSaveExtra = document.getElementById('btn-save-extra');
+    const btnSaveLink = document.getElementById('btn-save-link');
+    
+    const tabProjects = document.getElementById('tab-projects');
+    const tabExtras = document.getElementById('tab-extras');
+    const tabLinks = document.getElementById('tab-links');
+
+    let unsubscribeSnapshot: any = null;
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            loginSection?.classList.add('hidden');
+            dashboardSection?.classList.remove('hidden');
+            cambiarPestaña("projects");
+        } else {
+            loginSection?.classList.remove('hidden');
+            dashboardSection?.classList.add('hidden');
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+        }
+    });
+
+    btnLogin?.addEventListener('click', async () => {
+        const email = (document.getElementById('email') as HTMLInputElement).value;
+        const password = (document.getElementById('password') as HTMLInputElement).value;
+        try { await signInWithEmailAndPassword(auth, email, password); } catch (error: any) { alert('Credenciales inválidas.'); }
+    });
+
+    btnLogout?.addEventListener('click', async () => { await signOut(auth); });
+
+    tabProjects?.addEventListener('click', () => cambiarPestaña("projects"));
+    tabExtras?.addEventListener('click', () => cambiarPestaña("extras"));
+    tabLinks?.addEventListener('click', () => cambiarPestaña("links"));
+
+    function cambiarPestaña(tab: "projects" | "extras" | "links") {
+        projectFormBlock?.classList.add('hidden');
+        extraFormBlock?.classList.add('hidden');
+        linkFormBlock?.classList.add('hidden');
+        tabProjects?.classList.remove('active');
+        tabExtras?.classList.remove('active');
+        tabLinks?.classList.remove('active');
+
+        if (tab === "projects") {
+            tabProjects?.classList.add('active');
+            projectFormBlock?.classList.remove('hidden');
+        } else if (tab === "extras") {
+            tabExtras?.classList.add('active');
+            extraFormBlock?.classList.remove('hidden');
+        } else {
+            tabLinks?.classList.add('active');
+            linkFormBlock?.classList.remove('hidden');
+        }
+        escucharElementosFirestore(tab);
+    }
+
+    function escucharElementosFirestore(coleccion: "projects" | "extras" | "links") {
+        if (unsubscribeSnapshot) unsubscribeSnapshot();
+        const q = query(collection(db, coleccion), orderBy("createdAt", "desc"));
+        
+        unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
+            if (!liveItemsList) return;
+            liveItemsList.innerHTML = "";
+            if (snapshot.empty) {
+                liveItemsList.innerHTML = `<p class="empty-text">No hay registros en "${coleccion}".</p>`;
+                return;
+            }
+
+            snapshot.forEach((firebaseDoc) => {
+                const data = firebaseDoc.data();
+                const id = firebaseDoc.id;
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'crud-item';
+                
+                let descriptor = data.title || data.name;
+                if (data.icon) descriptor = `${data.icon} ${descriptor}`;
+
+                itemDiv.innerHTML = `
+                    <span class="item-name">${descriptor}</span>
+                    <button class="delete-btn" data-id="${id}">Eliminar</button>
+                `;
+
+                itemDiv.querySelector('.delete-btn')?.addEventListener('click', async (e) => {
+                    const docId = (e.target as HTMLButtonElement).getAttribute('data-id');
+                    if (docId && confirm(`¿Seguro que deseas eliminar este elemento?`)) {
+                        await deleteDoc(doc(db, coleccion, docId));
+                    }
+                });
+                liveItemsList.appendChild(itemDiv);
+            });
+        });
+    }
+
+    btnSaveProject?.addEventListener('click', async () => {
+        const title = (document.getElementById('proj-title') as HTMLInputElement).value;
+        const techRaw = (document.getElementById('proj-tech') as HTMLInputElement).value;
+        const description = (document.getElementById('proj-desc') as HTMLTextAreaElement).value;
+        const link = (document.getElementById('proj-link') as HTMLInputElement).value;
+        if (!title || !description) return alert('Rellena los campos obligatorios.');
+        const techStack = techRaw.split(',').map(t => t.trim()).filter(t => t !== "");
+        await addDoc(collection(db, "projects"), { title, description, techStack, link, createdAt: new Date() });
+        ['proj-title', 'proj-tech', 'proj-desc', 'proj-link'].forEach(id => (document.getElementById(id) as any).value = "");
+    });
+
+    btnSaveExtra?.addEventListener('click', async () => {
+        const icon = (document.getElementById('extra-icon') as HTMLInputElement).value;
+        const title = (document.getElementById('extra-title') as HTMLInputElement).value;
+        const description = (document.getElementById('extra-desc') as HTMLTextAreaElement).value;
+        if (!title || !description) return alert('Rellena los campos obligatorios.');
+        await addDoc(collection(db, "extras"), { icon: icon || "✨", title, description, createdAt: new Date() });
+        ['extra-icon', 'extra-title', 'extra-desc'].forEach(id => (document.getElementById(id) as any).value = "");
+    });
+
+    btnSaveLink?.addEventListener('click', async () => {
+        const name = (document.getElementById('link-name') as HTMLInputElement).value;
+        const url = (document.getElementById('link-url') as HTMLInputElement).value;
+        if (!name || !url) return alert('Campos obligatorios.');
+        await addDoc(collection(db, "links"), { name, url, createdAt: new Date() });
+        (document.getElementById('link-name') as HTMLInputElement).value = "";
+        (document.getElementById('link-url') as HTMLInputElement).value = "";
+    });
+</script>
+
+<style>
+    .admin-container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+    .admin-card { background: #1e1e1e; border: 1px solid #2a2a2a; padding: 30px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); margin-bottom: 20px; }
+    h2, h3 { margin: 0 0 5px 0; color: #ffffff; }
+    .subtitle { color: #888888; font-size: 0.85rem; margin-bottom: 25px; }
+    .form-group { margin-bottom: 15px; }
+    input, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #2a2a2a; color: #fff; font-size: 0.9rem; box-sizing: border-box; }
+    input:focus, textarea:focus { outline: none; border-color: #00ff88; }
+    .primary-btn { width: 100%; padding: 12px; background: #00ff88; color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .dashboard-wrapper { display: flex; flex-direction: column; gap: 20px; }
+    .admin-nav { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2a2a; padding-bottom: 15px; }
+    .nav-tabs { display: flex; gap: 10px; }
+    .tab-btn { background: #2a2a2a; color: #aaa; border: 1px solid #333; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .tab-btn.active { background: #00ff88; color: #000; border-color: #00ff88; }
+    .logout-link { background: transparent; border: none; color: #ff4444; cursor: pointer; font-weight: bold; }
+    .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .items-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .crud-item { background: #2a2a2a; border: 1px solid #333; padding: 12px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .item-name { color: #ffffff; font-weight: 500; font-size: 0.95rem; }
+    .delete-btn { background: rgba(255, 68, 68, 0.1); color: #ff4444; border: 1px solid #ff4444; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: 0.2s; }
+    .delete-btn:hover { background: #ff4444; color: #fff; }
+    .loading-text, .empty-text { color: #666; font-style: italic; text-align: center; padding: 20px 0; }
+    .hidden { display: none !important; }
+    @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } .admin-nav { flex-direction: column; gap: 15px; align-items: flex-start; } }
+</style>
