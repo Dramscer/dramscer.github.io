@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ] # Si tu rama principal de Git se llama master, cámbiala aquí
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -18,6 +18,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,15 +27,15 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22" # 🚀 Actualizado a Node 22 para cumplir con el requisito de Astro
+          node-version: "22"
 
       - name: Install dependencies
         run: npm install
-        env:
-          PUBLIC_FIREBASE_API_KEY: ${{ secrets.PUBLIC_FIREBASE_API_KEY }}
-          
+
       - name: Build Astro
         run: npm run build
+        env:
+          PUBLIC_FIREBASE_API_KEY: ${{ secrets.PUBLIC_FIREBASE_API_KEY }}
 
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v4
