@@ -1,11 +1,10 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 
 const firebaseConfig = {
   apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || "", 
-  authDomain: "tu-proyecto.firebaseapp.com",
   authDomain: "portafolio-10805.firebaseapp.com",
   projectId: "portafolio-10805",
   storageBucket: "portafolio-10805.firebasestorage.app",
@@ -13,7 +12,11 @@ const firebaseConfig = {
   appId: "1:1078012840052:web:e74efabb107337144b6921"
 };
 
-const app = initializeApp(firebaseConfig);
+const esCliente = typeof window !== "undefined";
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+const app = esCliente 
+  ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp())
+  : null;
+
+export const db = esCliente ? getFirestore(app) : {};
+export const auth = esCliente ? getAuth(app) : {};
