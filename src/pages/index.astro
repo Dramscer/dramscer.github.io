@@ -4,7 +4,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <BaseLayout title="Gabriel García | Android Developer">
     <main class="portfolio-container">
-        <!-- SECCIÓN 1: PERFIL -->
         <section class="profile-section animate-on-scroll">
             <div class="profile-header">
                 <img src="/profile.png" alt="Luis Gabriel García Carmona" class="profile-img" />
@@ -15,33 +14,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                         Candidato a Ingeniería en Sistemas Computacionales entrando a la fase de proyecto de titulación con promedio de excelencia (97.4). Combino experiencia profesional en banca con un rol actual de liderazgo técnico y QA remoto.
                     </p>
                     
-                    <!-- 🔗 NUEVA: SECCIÓN DE ENLACES/REDES (Aquí aparecerá tu botón de GitHub del panel) -->
                     <div id="links-container" class="social-links-container">
-                        <!-- El script inyectará aquí tus redes como GitHub, LinkedIn, etc. -->
-                    </div>
+                        </div>
                 </div>
             </div>
         </section>
 
-        <!-- SECCIÓN 2: SKILLS -->
         <section class="skills-section animate-on-scroll">
             <div class="skills-grid">
-                <div class="skill-card">
+                <div class="skill-card-static">
                     <h4 class="text-neon-green">Lenguajes</h4>
                     <p>Kotlin, Java, Python, SQL, HTML5/CSS3, JavaScript</p>
                 </div>
-                <div class="skill-card">
+                <div class="skill-card-static">
                     <h4 class="text-neon-blue">Frameworks & Plataformas</h4>
                     <p>Android SDK, Astro, Firebase (Auth, Firestore, Realtime DB), Room Database</p>
                 </div>
-                <div class="skill-card">
+                <div class="skill-card-static">
                     <h4 class="text-neon-purple">Herramientas & DevOps</h4>
                     <p>Git, GitHub, VS Code, Android Studio</p>
                 </div>
             </div>
         </section>
 
-        <!-- SECCIÓN 3: PROYECTOS -->
         <section class="projects-section animate-on-scroll">
             <h3 class="section-title">Proyectos Destacados</h3>
             <div id="projects-container" class="projects-grid">
@@ -49,7 +44,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             </div>
         </section>
 
-        <!-- SECCIÓN 4: MÁS ALLÁ DEL CÓDIGO -->
         <section class="extras-section animate-on-scroll">
             <h3 class="section-title">Más allá del código</h3>
             <div id="extras-container" class="extras-grid">
@@ -70,13 +64,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             let html = '';
             snapshot.forEach((doc) => {
                 const data = doc.data();
-                // Si el nombre es GitHub, le ponemos su icono automático de FontAwesome
                 const esGithub = data.name?.toLowerCase().includes('github');
                 const icono = esGithub ? '<i class="fab fa-github"></i>' : '<i class="fas fa-link"></i>';
                 
                 html += `
                     <a href="${data.url || '#'}" target="_blank" class="social-link-btn">
-                        ${icono} ${data.name || 'Enlace'}
+                        ${icono} <span>${data.name || 'Enlace'}</span>
                     </a>
                 `;
             });
@@ -137,6 +130,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </script>
 
 <style>
+    /* --- CONTENEDOR GENERAL --- */
     .portfolio-container {
         max-width: 1000px;
         margin: 0 auto;
@@ -146,11 +140,48 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         gap: 3.5rem;
     }
 
+    .section-title {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid #222;
+        padding-bottom: 0.5rem;
+    }
+
     .text-neon-green { color: #00ff66; }
     .text-neon-blue  { color: #00ccff; }
     .text-neon-purple { color: #cc66ff; }
+    .loading-text, .empty-text { color: #666; font-style: italic; }
 
-    /* Estilos para los botones de tus redes sociales abajo del perfil */
+    /* --- ESTILOS DE TUS TARJETAS ESTÁTICAS DE SKILLS --- */
+    .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        width: 100%;
+    }
+
+    .skill-card-static {
+        background: #1e1e1e;
+        border: 1px solid #2a2a2a;
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .skills-grid > .skill-card-static:nth-child(1):hover {
+        transform: translateY(-4px); border-color: #00ff66; box-shadow: 0 8px 20px rgba(0, 255, 102, 0.1);
+    }
+    .skills-grid > .skill-card-static:nth-child(2):hover {
+        transform: translateY(-4px); border-color: #00ccff; box-shadow: 0 8px 20px rgba(0, 204, 255, 0.1);
+    }
+    .skills-grid > .skill-card-static:nth-child(3):hover {
+        transform: translateY(-4px); border-color: #cc66ff; box-shadow: 0 8px 20px rgba(204, 102, 255, 0.1);
+    }
+
+    /* --- 🔗 BOTONES DE ENLACES INYECTADOS (Bajo el Perfil) --- */
     .social-links-container {
         display: flex;
         gap: 1rem;
@@ -158,24 +189,89 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         flex-wrap: wrap;
     }
 
-    .social-link-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: #1e1e1e;
-        border: 1px solid #2a2a2a;
-        padding: 0.6rem 1.2rem;
-        border-radius: 8px;
-        color: #ffffff;
-        text-decoration: none;
-        font-size: 0.95rem;
-        font-weight: 500;
-        transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
+    :global(.social-link-btn) {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.6rem !important;
+        background: #1e1e1e !important;
+        border: 1px solid #2a2a2a !important;
+        padding: 0.6rem 1.2rem !important;
+        border-radius: 8px !important;
+        color: #ffffff !important;
+        text-decoration: none !important;
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
+        transition: border-color 0.2s, color 0.2s, box-shadow 0.2s !important;
     }
 
-    .social-link-btn:hover {
-        border-color: #00ff66;
-        color: #00ff66;
-        box-shadow: 0 4px 12px rgba(0, 255, 102, 0.1);
+    :global(.social-link-btn:hover) {
+        border-color: #00ff66 !important;
+        color: #00ff66 !important;
+        box-shadow: 0 4px 12px rgba(0, 255, 102, 0.15) !important;
+    }
+
+    /* --- 📋 MALLAS Y TARJETAS DINÁMICAS (Proyectos y Extras) --- */
+    .projects-grid, .extras-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+        gap: 1.5rem !important;
+        margin-top: 1.25rem !important;
+        width: 100% !important;
+    }
+
+    :global(.project-card), :global(.extra-card) {
+        background: #1e1e1e !important;
+        border: 1px solid #2a2a2a !important;
+        border-radius: 12px !important;
+        padding: 1.5rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.6rem !important;
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+    }
+
+    :global(.project-card:hover) {
+        transform: translateY(-4px) !important;
+        border-color: #00ff66 !important;
+        box-shadow: 0 8px 20px rgba(0, 255, 102, 0.1) !important;
+    }
+
+    :global(.extra-card:hover) {
+        transform: translateY(-4px) !important;
+        border-color: #cc66ff !important;
+        box-shadow: 0 8px 20px rgba(204, 102, 255, 0.1) !important;
+    }
+
+    :global(.project-card h4), :global(.extra-card h5) {
+        margin: 0 !important;
+        font-size: 1.3rem !important;
+        font-weight: 600 !important;
+        color: #ffffff !important;
+    }
+
+    :global(.project-card p), :global(.extra-card p) {
+        margin: 0 !important;
+        color: #b3b3b3 !important;
+        font-size: 0.95rem !important;
+        line-height: 1.5 !important;
+    }
+
+    /* --- BOTÓN DE ENLACE DE CÓDIGO (GitHub en proyectos) --- */
+    :global(.project-link) {
+        align-self: flex-start !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        margin-top: auto !important;
+        padding-top: 0.75rem !important;
+        color: #00ff66 !important;
+        text-decoration: none !important;
+        font-size: 0.9rem !important;
+        font-weight: 500 !important;
+    }
+
+    :global(.project-link:hover) {
+        color: #ffffff !important;
+        text-decoration: underline !important;
     }
 </style>
