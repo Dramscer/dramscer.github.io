@@ -4,9 +4,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <BaseLayout title="Gabriel García | Android Developer">
     <main class="portfolio-container">
+        
         <section class="profile-section animate-on-scroll">
             <div class="profile-header">
-                <img src="/profile.png" alt="Luis Gabriel García Carmona" class="profile-img" />
+                <div class="avatar-container">
+                    <img src="/profile.png" alt="Luis Gabriel García Carmona" class="profile-img" />
+                </div>
                 <div class="profile-text">
                     <h1 class="profile-name">Luis Gabriel García Carmona</h1>
                     <p class="profile-tagline">Android Developer ~ Software Engineering Candidate</p>
@@ -50,22 +53,31 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                 <p class="loading-text">Cargando pasatiempos...</p>
             </div>
         </section>
+        
     </main>
 </BaseLayout>
 
 <script>
     import { db } from '../lib/firebase';
-    import { collection, onSnapshot } from 'firebase/firestore';
+    import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 
-    // === 1. ESCUCHAR ENLACES / REDES SOCIALES ===
+    // === 1. ENLACES DINÁMICOS CON SOPORTE MULTI-ÍCONO ===
     const linksContainer = document.getElementById('links-container');
     if (linksContainer) {
         onSnapshot(collection(db, 'links'), (snapshot) => {
             let html = '';
             snapshot.forEach((doc) => {
                 const data = doc.data();
-                const esGithub = data.name?.toLowerCase().includes('github');
-                const icono = esGithub ? '<i class="fab fa-github"></i>' : '<i class="fas fa-link"></i>';
+                const nombreRed = data.name?.toLowerCase() || '';
+                
+                let icono = '<i class="fas fa-link"></i>'; 
+                if (nombreRed.includes('github')) {
+                    icono = '<i class="fab fa-github"></i>';
+                } else if (nombreRed.includes('linkedin')) {
+                    icono = '<i class="fab fa-linkedin"></i>';
+                } else if (nombreRed.includes('correo') || nombreRed.includes('email') || nombreRed.includes('contacto')) {
+                    icono = '<i class="fas fa-envelope"></i>';
+                }
                 
                 html += `
                     <a href="${data.url || '#'}" target="_blank" class="social-link-btn">
@@ -77,10 +89,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         });
     }
 
-    // === 2. ESCUCHAR PROYECTOS ===
+    // === 2. PROYECTOS (Con Botón 'Detalles' condicional a la derecha) ===
     const projectsContainer = document.getElementById('projects-container');
     if (projectsContainer) {
-        onSnapshot(collection(db, 'projects'), (snapshot) => {
+        const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
+        onSnapshot(q, (snapshot) => {
             if (snapshot.empty) {
                 projectsContainer.innerHTML = '<p class="empty-text">No hay proyectos disponibles en este momento.</p>';
                 return;
@@ -89,15 +102,45 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             let html = '';
             snapshot.forEach((doc) => {
                 const data = doc.data();
+                
+                // Mapear etiquetas de tecnologías (techStack)
+                let tagsHtml = '';
+                if (data.techStack && Array.isArray(data.techStack)) {
+                    tagsHtml = `<div class="project-tags">`;
+                    data.techStack.forEach(tech => {
+                        tagsHtml += `<span class="tag-badge">${tech}</span>`;
+                    });
+                    tagsHtml += `</div>`;
+                }
+
+                // 🛠️ Validación lógica para el Botón de Detalles
+                let botonHtml = '';
+                if (data.link && data.link.trim() !== "") {
+                    // Si TIENE link activo (Verde e interactivo)
+                    botonHtml = `
+                        <a href="${data.link}" target="_blank" class="project-link-btn">
+                            Detalles <i class="fas fa-arrow-right"></i>
+                        </a>
+                    `;
+                } else {
+                    // Si NO TIENE link (Gris deshabilitado)
+                    botonHtml = `
+                        <button class="project-link-btn disabled" disabled>
+                            Próximamente
+                        </button>
+                    `;
+                }
+
                 html += `
                     <div class="project-card">
-                        <h4>${data.title || 'Proyecto sin título'}</h4>
-                        <p>${data.description || 'Sin descripción disponible.'}</p>
-                        ${data.link ? `
-                            <a href="${data.link}" target="_blank" class="project-link">
-                                <i class="fab fa-github"></i> Ver Código
-                            </a>
-                        ` : ''}
+                        <div class="project-card-content">
+                            <h4>${data.title || 'Proyecto sin título'}</h4>
+                            <p>${data.description || 'Sin descripción disponible.'}</p>
+                            ${tagsHtml}
+                        </div>
+                        <div class="project-card-actions">
+                            ${botonHtml}
+                        </div>
                     </div>
                 `;
             });
@@ -105,10 +148,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         });
     }
 
-    // === 3. ESCUCHAR MÁS ALLÁ DEL CÓDIGO ===
+    // === 3. MÁS ALLÁ DEL CÓDIGO ===
     const extrasContainer = document.getElementById('extras-container');
     if (extrasContainer) {
-        onSnapshot(collection(db, 'extras'), (snapshot) => {
+        const q = query(collection(db, 'extras'), orderBy('createdAt', 'asc'));
+        onSnapshot(q, (snapshot) => {
             if (snapshot.empty) {
                 extrasContainer.innerHTML = '<p class="empty-text">Agrega habilidades blandas desde el panel administrador.</p>';
                 return;
@@ -119,8 +163,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                 const data = doc.data();
                 html += `
                     <div class="extra-card">
-                        <h5>${data.name || 'Actividad'}</h5>
-                        <p>${data.detail || ''}</p>
+                        <h5>${data.icon ? `${data.icon} ` : ''}${data.title || 'Actividad'}</h5>
+                        <p>${data.description || ''}</p>
                     </div>
                 `;
             });
@@ -140,138 +184,126 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         gap: 3.5rem;
     }
 
-    .section-title {
-        font-size: 1.8rem;
-        margin-bottom: 1.5rem;
-        border-bottom: 2px solid #222;
-        padding-bottom: 0.5rem;
+    /* --- 👤 DISEÑO DE CABECERA --- */
+    .profile-header { display: flex; align-items: center; gap: 2.5rem; width: 100%; }
+    .avatar-container { flex-shrink: 0; }
+    .profile-img { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid #00ff66; box-shadow: 0 0 15px rgba(0, 255, 102, 0.2); }
+    .profile-text { display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1; }
+    .profile-name { font-size: 2.2rem; font-weight: 800; margin: 0; }
+    .profile-tagline { color: #00ff66; font-size: 1.1rem; font-weight: 500; margin: 0; }
+    .profile-description { color: #b3b3b3; line-height: 1.6; margin: 0; font-size: 1rem; }
+
+    @media (max-width: 768px) {
+        .profile-header { flex-direction: column; text-align: center; gap: 1.5rem; }
+        .social-links-container { justify-content: center !important; }
+        :global(.project-card) { flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; }
+        :global(.project-card-actions) { width: 100% !important; display: flex; justify-content: flex-end; }
     }
 
+    /* --- 🔗 BOTONES DE REDES --- */
+    .social-links-container { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; justify-content: flex-start; }
+    :global(.social-link-btn) { display: inline-flex !important; align-items: center !important; gap: 0.5rem !important; background: #1e1e1e !important; border: 1px solid #2a2a2a !important; padding: 0.5rem 1.2rem !important; border-radius: 6px !important; color: #ffffff !important; text-decoration: none !important; font-size: 0.9rem !important; font-weight: 500 !important; transition: border-color 0.2s, color 0.2s, transform 0.2s !important; }
+    :global(.social-link-btn:hover) { border-color: #00ff66 !important; color: #00ff66 !important; transform: translateY(-2px) !important; }
+
+    /* --- MALLAS GENERALES --- */
+    .section-title { font-size: 1.8rem; margin-bottom: 1.5rem; border-bottom: 2px solid #222; padding-bottom: 0.5rem; }
     .text-neon-green { color: #00ff66; }
     .text-neon-blue  { color: #00ccff; }
     .text-neon-purple { color: #cc66ff; }
     .loading-text, .empty-text { color: #666; font-style: italic; }
 
-    /* --- ESTILOS DE TUS TARJETAS ESTÁTICAS DE SKILLS --- */
-    .skills-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
-        width: 100%;
-    }
-
-    .skill-card-static {
-        background: #1e1e1e;
-        border: 1px solid #2a2a2a;
-        border-radius: 12px;
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.6rem;
-        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .skills-grid > .skill-card-static:nth-child(1):hover {
-        transform: translateY(-4px); border-color: #00ff66; box-shadow: 0 8px 20px rgba(0, 255, 102, 0.1);
-    }
-    .skills-grid > .skill-card-static:nth-child(2):hover {
-        transform: translateY(-4px); border-color: #00ccff; box-shadow: 0 8px 20px rgba(0, 204, 255, 0.1);
-    }
-    .skills-grid > .skill-card-static:nth-child(3):hover {
-        transform: translateY(-4px); border-color: #cc66ff; box-shadow: 0 8px 20px rgba(204, 102, 255, 0.1);
-    }
-
-    /* --- 🔗 BOTONES DE ENLACES INYECTADOS (Bajo el Perfil) --- */
-    .social-links-container {
-        display: flex;
-        gap: 1rem;
-        margin-top: 1.5rem;
-        flex-wrap: wrap;
-    }
-
-    :global(.social-link-btn) {
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 0.6rem !important;
-        background: #1e1e1e !important;
-        border: 1px solid #2a2a2a !important;
-        padding: 0.6rem 1.2rem !important;
-        border-radius: 8px !important;
-        color: #ffffff !important;
-        text-decoration: none !important;
-        font-size: 0.95rem !important;
-        font-weight: 500 !important;
-        transition: border-color 0.2s, color 0.2s, box-shadow 0.2s !important;
-    }
-
-    :global(.social-link-btn:hover) {
-        border-color: #00ff66 !important;
-        color: #00ff66 !important;
-        box-shadow: 0 4px 12px rgba(0, 255, 102, 0.15) !important;
-    }
-
-    /* --- 📋 MALLAS Y TARJETAS DINÁMICAS (Proyectos y Extras) --- */
-    .projects-grid, .extras-grid {
+    .skills-grid, .extras-grid {
         display: grid !important;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
         gap: 1.5rem !important;
         margin-top: 1.25rem !important;
         width: 100% !important;
     }
+    
+    /* Malla de proyectos adaptada a renglón flexible de ancho completo */
+    .projects-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.5rem !important;
+        width: 100% !important;
+    }
 
-    :global(.project-card), :global(.extra-card) {
+    .skill-card-static, :global(.extra-card) {
         background: #1e1e1e !important;
         border: 1px solid #2a2a2a !important;
         border-radius: 12px !important;
         padding: 1.5rem !important;
         display: flex !important;
         flex-direction: column !important;
-        gap: 0.6rem !important;
-        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+        gap: 0.7rem !important;
+        transition: transform 0.2s ease, border-color 0.2s ease !important;
     }
 
-    :global(.project-card:hover) {
-        transform: translateY(-4px) !important;
-        border-color: #00ff66 !important;
-        box-shadow: 0 8px 20px rgba(0, 255, 102, 0.1) !important;
+    /* --- 📦 REINVENTANDO LA TARJETA DE PROYECTO (FLEXBOX HORIZONTAL) --- */
+    :global(.project-card) {
+        background: #1e1e1e !important;
+        border: 1px solid #2a2a2a !important;
+        border-radius: 12px !important;
+        padding: 1.75rem !important;
+        display: flex !important;
+        flex-direction: row !important; /* Texto a la izquierda, acción a la derecha */
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 2rem !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
     }
 
-    :global(.extra-card:hover) {
-        transform: translateY(-4px) !important;
-        border-color: #cc66ff !important;
-        box-shadow: 0 8px 20px rgba(204, 102, 255, 0.1) !important;
+    :global(.project-card-content) {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+        flex-grow: 1 !important;
     }
 
-    :global(.project-card h4), :global(.extra-card h5) {
-        margin: 0 !important;
-        font-size: 1.3rem !important;
-        font-weight: 600 !important;
-        color: #ffffff !important;
+    :global(.project-card-actions) {
+        flex-shrink: 0 !important;
     }
 
-    :global(.project-card p), :global(.extra-card p) {
-        margin: 0 !important;
-        color: #b3b3b3 !important;
-        font-size: 0.95rem !important;
-        line-height: 1.5 !important;
-    }
+    .skills-grid > .skill-card-static:nth-child(1):hover, :global(.project-card:hover) { transform: translateY(-3px); border-color: #00ff66 !important; box-shadow: 0 5px 15px rgba(0, 255, 102, 0.05); }
+    .skills-grid > .skill-card-static:nth-child(2):hover { transform: translateY(-4px) !important; border-color: #00ccff !important; }
+    .skills-grid > .skill-card-static:nth-child(3):hover, :global(.extra-card:hover) { transform: translateY(-4px) !important; border-color: #cc66ff !important; }
 
-    /* --- BOTÓN DE ENLACE DE CÓDIGO (GitHub en proyectos) --- */
-    :global(.project-link) {
-        align-self: flex-start !important;
+    :global(.project-card h4), :global(.extra-card h5) { margin: 0 !important; font-size: 1.3rem !important; font-weight: 600 !important; }
+    :global(.project-card p), :global(.extra-card p) { margin: 0 !important; color: #b3b3b3 !important; font-size: 0.95rem !important; line-height: 1.5 !important; }
+
+    /* --- 🏷️ ETIQUETAS (TAGS) --- */
+    :global(.project-tags) { display: flex !important; flex-wrap: wrap !important; gap: 0.5rem !important; margin-top: 0.4rem !important; }
+    :global(.tag-badge) { background: #2a2a2a !important; color: #00ff66 !important; border: 1px solid rgba(0, 255, 102, 0.15) !important; padding: 0.25rem 0.6rem !important; border-radius: 4px !important; font-size: 0.8rem !important; font-weight: 500 !important; text-transform: uppercase; }
+
+    /* --- 🎯 NUEVO BOTÓN DE DETALLES PREMIUM (Más grande y a la derecha) --- */
+    :global(.project-link-btn) {
         display: inline-flex !important;
         align-items: center !important;
-        gap: 0.5rem !important;
-        margin-top: auto !important;
-        padding-top: 0.75rem !important;
+        gap: 0.6rem !important;
+        background: transparent !important;
+        border: 2px solid #00ff66 !important; /* Delineado verde neón */
+        padding: 0.65rem 1.4rem !important;
+        border-radius: 6px !important;
         color: #00ff66 !important;
         text-decoration: none !important;
-        font-size: 0.9rem !important;
-        font-weight: 500 !important;
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        transition: background 0.2s, color 0.2s, box-shadow 0.2s !important;
     }
 
-    :global(.project-link:hover) {
-        color: #ffffff !important;
-        text-decoration: underline !important;
+    :global(.project-link-btn:not(.disabled):hover) {
+        background: #00ff66 !important;
+        color: #121212 !important; /* Invierte a texto oscuro al hover */
+        box-shadow: 0 0 15px rgba(0, 255, 102, 0.3) !important;
+    }
+
+    /* 🚫 Estado Gris / Deshabilitado si no hay link en Firestore */
+    :global(.project-link-btn.disabled) {
+        border-color: #333333 !important;
+        color: #666666 !important;
+        background: #1a1a1a !important;
+        cursor: not-allowed !important;
+        font-weight: 500 !important;
     }
 </style>
