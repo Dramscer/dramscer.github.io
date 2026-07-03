@@ -193,11 +193,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     .profile-tagline { color: #00ff66; font-size: 1.1rem; font-weight: 500; margin: 0; }
     .profile-description { color: #b3b3b3; line-height: 1.6; margin: 0; font-size: 1rem; }
 
+ /* Responsive para pantallas pequeñas (Celulares) */
     @media (max-width: 768px) {
-        .profile-header { flex-direction: column; text-align: center; gap: 1.5rem; }
-        .social-links-container { justify-content: center !important; }
-        :global(.project-card) { flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; }
-        :global(.project-card-actions) { width: 100% !important; display: flex; justify-content: flex-end; }
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+        }
+        .social-links-container {
+            justify-content: center !important;
+        }
+        
+        /* 📱 Forzamos a la tarjeta del proyecto a ser vertical en el cel */
+        :global(.project-card) {
+            flex-direction: column !important;
+            align-items: stretch !important; /* Estira el contenido de forma segura */
+            gap: 1.25rem !important;
+        }
+        
+        /* El botón de detalles se acopla abajo a la derecha o centrado */
+        :global(.project-card-actions) {
+            align-self: flex-end !important; /* Lo acomoda abajo a la derecha de la tarjeta */
+        }
     }
 
     /* --- 🔗 BOTONES DE REDES --- */
@@ -246,7 +263,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         border-radius: 12px !important;
         padding: 1.75rem !important;
         display: flex !important;
-        flex-direction: row !important; /* Texto a la izquierda, acción a la derecha */
+        flex-direction: row; 
         justify-content: space-between !important;
         align-items: center !important;
         gap: 2rem !important;
