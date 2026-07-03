@@ -8,7 +8,7 @@ const { title = "Luis Gabriel | Portafolio" } = Astro.props;
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <title>{title}</title>
 </head>
 <body>
@@ -22,17 +22,18 @@ const { title = "Luis Gabriel | Portafolio" } = Astro.props;
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('is-visible');
-                        observer.unobserve(entry.target);
+                        observer.unobserve(entry.target); // Animación de un solo viaje
                     }
                 });
             }, {
-                threshold: 0.1,
-                rootMargin: "0px 0px -50px 0px"
+                threshold: 0.05,
+                rootMargin: "0px 0px -30px 0px"
             });
 
             elementosAanimar.forEach(el => observer.observe(el));
         };
 
+        // Se ejecuta al cargar la página y al cambiar de ruta con transiciones de Astro
         configurarAnimaciones();
         document.addEventListener('astro:after-swap', configurarAnimaciones);
     </script>
@@ -40,54 +41,102 @@ const { title = "Luis Gabriel | Portafolio" } = Astro.props;
 </html>
 
 <style is:global>
-    /* Forzamos que se aplique de forma global sin importar la ruta */
+    /* --- CONFIGURACIÓN BASE DEL ENTORNO OSCURO --- */
     :root {
         color-scheme: dark;
-        /* --- DISEÑO PREMIUM DE TARJETAS (ESTILOS COMPARTIDOS) --- */
+    }
+
+    html, body {
+        background-color: #121212 !important;
+        color: #ffffff !important;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        overflow-x: hidden;
+        scroll-behavior: smooth;
+    }
+
+    *, *:before, *:after {
+        box-sizing: inherit;
+    }
+
+    /* --- SISTEMA DE ESTRUCTURACIÓN EN MALLAS COMPACTAS (GRIDS) --- */
     .skills-grid, .projects-grid, .extras-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 1.5rem;
-        margin-top: 1rem;
+        margin-top: 1.25rem;
+        width: 100%;
     }
 
+    /* Diseños de proyectos ligeramente más amplios para el código de Git */
+    .projects-grid {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    /* --- DISEÑO ORIGINAL DE LAS TARJETAS PREMIUM --- */
     .skill-card, .project-card, .extra-card {
-        background: rgba(30, 30, 30, 0.6);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #1e1e1e !important; /* Gris oscuro sólido original */
+        border: 1px solid #2a2a2a !important;
         border-radius: 12px;
         padding: 1.5rem;
-        transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                    border-color 0.25s ease, 
+                    box-shadow 0.25s ease;
     }
 
-    /* Efecto Hover para que resalten al pasar el mouse */
-    .skill-card:hover, .project-card:hover, .extra-card:hover {
+    /* --- HOVERS CON BORDES NEÓN PERSONALIZADOS INDIVIDUALES --- */
+    
+    /* 1. Tarjeta de Lenguajes / Bloques de Proyectos (Verde Neón) */
+    .skills-grid > .skill-card:nth-child(1):hover, 
+    .project-card:hover {
         transform: translateY(-5px);
-        border-color: #00ff66; /* Verde neón por defecto */
-        box-shadow: 0 10px 20px rgba(0, 255, 102, 0.1);
+        border-color: #00ff66 !important;
+        box-shadow: 0 8px 25px rgba(0, 255, 102, 0.12);
     }
 
-    /* Tipografías dentro de las tarjetas */
+    /* 2. Tarjeta de Frameworks & Plataformas (Azul Neón) */
+    .skills-grid > .skill-card:nth-child(2):hover {
+        transform: translateY(-5px);
+        border-color: #00ccff !important;
+        box-shadow: 0 8px 25px rgba(0, 204, 255, 0.12);
+    }
+
+    /* 3. Tarjeta de Herramientas / Bloques de Extras (Morado Neón) */
+    .skills-grid > .skill-card:nth-child(3):hover, 
+    .extra-card:hover {
+        transform: translateY(-5px);
+        border-color: #cc66ff !important;
+        box-shadow: 0 8px 25px rgba(204, 102, 255, 0.12);
+    }
+
+    /* --- ESTILOS DE TEXTO INTERNOS --- */
     .skill-card h4, .project-card h4, .extra-card h5 {
-        margin-top: 0;
-        margin-bottom: 0.75rem;
-        font-size: 1.25rem;
+        margin: 0;
+        font-size: 1.3rem;
         font-weight: 600;
+        letter-spacing: -0.02em;
     }
 
     .skill-card p, .project-card p, .extra-card p {
+        margin: 0;
         color: #b3b3b3;
         font-size: 0.95rem;
-        line-height: 1.5;
-        margin: 0;
+        line-height: 1.6;
     }
 
-    /* Botón de enlace a GitHub estilizado */
+    /* --- ENLACES INTERNOS DE PROYECTOS (BOTÓN GITHUB) --- */
     .project-link {
+        align-self: flex-start; /* Evita que el enlace se estire horizontalmente */
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        margin-top: 1.25rem;
+        margin-top: auto; /* Lo empuja siempre al fondo de la tarjeta */
+        padding-top: 0.75rem;
         color: #00ff66;
         text-decoration: none;
         font-size: 0.9rem;
@@ -100,35 +149,12 @@ const { title = "Luis Gabriel | Portafolio" } = Astro.props;
         text-decoration: underline;
     }
 
-    /* Variaciones de colores individuales si quieres que mantengan sus tonos originales */
-    .skill-card:nth-child(2):hover { 
-        border-color: #00ccff; 
-        box-shadow: 0 10px 20px rgba(0, 204, 255, 0.1); 
-    }
-    .skill-card:nth-child(3):hover { 
-        border-color: #cc66ff; 
-        box-shadow: 0 10px 20px rgba(204, 102, 255, 0.1); 
-    }
-    }
-
-    html, body {
-        background-color: #121212 !important;
-        color: #ffffff !important;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    *, *:before, *:after {
-        box-sizing: inherit;
-    }
-
-    /* --- CLASES BASE PARA ANIMACIÓN EN SCROLL --- */
+    /* --- ANIMACIONES DE DESPLAZAMIENTO (SCROLL) --- */
     .animate-on-scroll {
         opacity: 0;
-        transform: translateY(30px);
-        transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        transform: translateY(25px);
+        transition: opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                    transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
         will-change: opacity, transform;
     }
 

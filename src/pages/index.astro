@@ -4,6 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <BaseLayout title="Gabriel García | Android Developer">
     <main class="portfolio-container">
+        <!-- SECCIÓN 1: PERFIL -->
         <section class="profile-section animate-on-scroll">
             <div class="profile-header">
                 <img src="/profile.png" alt="Luis Gabriel García Carmona" class="profile-img" />
@@ -13,10 +14,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                     <p class="profile-description">
                         Candidato a Ingeniería en Sistemas Computacionales entrando a la fase de proyecto de titulación con promedio de excelencia (97.4). Combino experiencia profesional en banca con un rol actual de liderazgo técnico y QA remoto.
                     </p>
+                    
+                    <!-- 🔗 NUEVA: SECCIÓN DE ENLACES/REDES (Aquí aparecerá tu botón de GitHub del panel) -->
+                    <div id="links-container" class="social-links-container">
+                        <!-- El script inyectará aquí tus redes como GitHub, LinkedIn, etc. -->
+                    </div>
                 </div>
             </div>
         </section>
 
+        <!-- SECCIÓN 2: SKILLS -->
         <section class="skills-section animate-on-scroll">
             <div class="skills-grid">
                 <div class="skill-card">
@@ -34,6 +41,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             </div>
         </section>
 
+        <!-- SECCIÓN 3: PROYECTOS -->
         <section class="projects-section animate-on-scroll">
             <h3 class="section-title">Proyectos Destacados</h3>
             <div id="projects-container" class="projects-grid">
@@ -41,6 +49,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             </div>
         </section>
 
+        <!-- SECCIÓN 4: MÁS ALLÁ DEL CÓDIGO -->
         <section class="extras-section animate-on-scroll">
             <h3 class="section-title">Más allá del código</h3>
             <div id="extras-container" class="extras-grid">
@@ -48,15 +57,35 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             </div>
         </section>
     </main>
-</BaseLayout>
+</Layout>
 
 <script>
     import { db } from '../lib/firebase';
     import { collection, onSnapshot } from 'firebase/firestore';
 
-    // === 1. ESCUCHAR Y RENDERIZAR PROYECTOS ===
+    // === 1. ESCUCHAR ENLACES / REDES SOCIALES ===
+    const linksContainer = document.getElementById('links-container');
+    if (linksContainer) {
+        onSnapshot(collection(db, 'links'), (snapshot) => {
+            let html = '';
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                // Si el nombre es GitHub, le ponemos su icono automático de FontAwesome
+                const esGithub = data.name?.toLowerCase().includes('github');
+                const icono = esGithub ? '<i class="fab fa-github"></i>' : '<i class="fas fa-link"></i>';
+                
+                html += `
+                    <a href="${data.url || '#'}" target="_blank" class="social-link-btn">
+                        ${icono} ${data.name || 'Enlace'}
+                    </a>
+                `;
+            });
+            linksContainer.innerHTML = html;
+        });
+    }
+
+    // === 2. ESCUCHAR PROYECTOS ===
     const projectsContainer = document.getElementById('projects-container');
-    
     if (projectsContainer) {
         onSnapshot(collection(db, 'projects'), (snapshot) => {
             if (snapshot.empty) {
@@ -68,7 +97,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             snapshot.forEach((doc) => {
                 const data = doc.data();
                 html += `
-                    <div class="project-card animate-on-scroll is-visible">
+                    <div class="project-card">
                         <h4>${data.title || 'Proyecto sin título'}</h4>
                         <p>${data.description || 'Sin descripción disponible.'}</p>
                         ${data.link ? `
@@ -83,13 +112,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         });
     }
 
-    // === 2. ESCUCHAR Y RENDERIZAR MÁS ALLÁ DEL CÓDIGO ===
+    // === 3. ESCUCHAR MÁS ALLÁ DEL CÓDIGO ===
     const extrasContainer = document.getElementById('extras-container');
-    
     if (extrasContainer) {
         onSnapshot(collection(db, 'extras'), (snapshot) => {
             if (snapshot.empty) {
-                extrasContainer.innerHTML = '<p class="empty-text">Agrega habilidades blandas o pasatiempos desde el panel administrador.</p>';
+                extrasContainer.innerHTML = '<p class="empty-text">Agrega habilidades blandas desde el panel administrador.</p>';
                 return;
             }
             
@@ -97,7 +125,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             snapshot.forEach((doc) => {
                 const data = doc.data();
                 html += `
-                    <div class="extra-card animate-on-scroll is-visible">
+                    <div class="extra-card">
                         <h5>${data.name || 'Actividad'}</h5>
                         <p>${data.detail || ''}</p>
                     </div>
@@ -109,31 +137,45 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </script>
 
 <style>
-    /* Estilos base de ordenamiento para asegurar que las mallas se pinten impecables */
     .portfolio-container {
-        max-width: 900px;
+        max-width: 1000px;
         margin: 0 auto;
-        padding: 2rem 1rem;
+        padding: 2rem 1.5rem;
         display: flex;
         flex-direction: column;
-        gap: 3rem;
+        gap: 3.5rem;
     }
 
-    .section-title {
-        font-size: 1.8rem;
-        margin-bottom: 1.5rem;
-        border-bottom: 2px solid #222;
-        padding-bottom: 0.5rem;
-    }
-
-    .loading-text, .empty-text {
-        color: #666;
-        font-style: italic;
-        grid-column: 1 / -1;
-    }
-
-    /* Colores neón personalizados para los títulos de tus habilidades fijas */
     .text-neon-green { color: #00ff66; }
     .text-neon-blue  { color: #00ccff; }
     .text-neon-purple { color: #cc66ff; }
+
+    /* Estilos para los botones de tus redes sociales abajo del perfil */
+    .social-links-container {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .social-link-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #1e1e1e;
+        border: 1px solid #2a2a2a;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+
+    .social-link-btn:hover {
+        border-color: #00ff66;
+        color: #00ff66;
+        box-shadow: 0 4px 12px rgba(0, 255, 102, 0.1);
+    }
 </style>
